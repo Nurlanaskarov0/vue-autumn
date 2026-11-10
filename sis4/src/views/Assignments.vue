@@ -1,0 +1,11 @@
+<script setup>
+import { computed, ref } from 'vue'
+import { api } from '../services/api'
+import { useRequest } from '../composables/useRequest'
+import { useTaskStatus } from '../composables/useTaskStatus'
+const search=ref(''), filter=ref('All')
+const { completed, toggle, storageError } = useTaskStatus()
+const {data,loading,error,reload}=useRequest(async signal=>(await api.get('/todos',{params:{userId:1},signal})).data)
+const filtered=computed(()=>(data.value || []).filter(t=>t.title.toLowerCase().includes(search.value.toLowerCase())&&(filter.value==='All'||(filter.value==='Completed' ? completed(t) : !completed(t)))))
+</script>
+<template><div class="page-heading"><div><div class="eyebrow">A LITTLE FOCUS GOES A LONG WAY</div><h1>Make space for progress.</h1><p>Your assignments, together in one place.</p></div><a-button @click="reload" :loading="loading">Refresh tasks</a-button></div><a-alert type="info" show-icon message="Demo tasks come from a REST API. Completion changes are saved on this device." style="margin-bottom:24px"/><a-alert v-if="storageError" type="warning" :message="storageError"/><div class="toolbar"><a-input-search v-model:value="search" placeholder="Search assignments" allow-clear style="max-width:360px"/><a-segmented v-model:value="filter" :options="['All','Pending','Completed']"/></div><a-alert v-if="error" type="error" show-icon :message="error"><template #action><a-button @click="reload">Try again</a-button></template></a-alert><a-skeleton v-else-if="loading" active :paragraph="{rows:8}"/><template v-else-if="data"><div class="section-heading"><h2>{{filter}} assignments</h2><span>{{filtered.length}} tasks</span></div><a-list class="tasks-list" :data-source="filtered" :locale="{emptyText:'No assignments match your filters'}"><template #renderItem="{item}"><a-list-item><div class="task-content"><a-checkbox :checked="completed(item)" @change="toggle(item)" :aria-label="'Mark '+item.title+(completed(item)?' pending':' completed')"/><div><small>ASSIGNMENT #{{String(item.id).padStart(2,'0')}}</small><div :class="{completed:completed(item)}">{{item.title}}</div></div></div><a-tag :color="completed(item)?'green':'gold'">{{completed(item)?'Completed':'Pending'}}</a-tag></a-list-item></template></a-list></template></template>
