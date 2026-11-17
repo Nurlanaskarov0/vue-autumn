@@ -1,0 +1,8 @@
+<script setup>
+import { EditOutlined, DeleteOutlined, CalendarOutlined } from '@ant-design/icons-vue'
+import { useTasks, statusLabels } from '../composables/useTasks'
+defineProps({task:{type:Object,required:true}})
+defineEmits(['edit'])
+const {store,formatDate,overdue}=useTasks()
+</script>
+<template><article class="task-card" :class="{finished:task.status==='done'}"><div class="card-top"><a-tag :class="'priority-'+task.priority">{{task.priority}} priority</a-tag><div class="card-actions"><a-button type="text" size="small" :aria-label="'Edit '+task.title" @click="$emit('edit',task)"><EditOutlined/></a-button><a-popconfirm title="Delete this task?" description="This task will be removed from your device." ok-text="Delete" cancel-text="Keep task" @confirm="store.removeTask(task.id)"><a-button type="text" size="small" :aria-label="'Delete '+task.title"><DeleteOutlined/></a-button></a-popconfirm></div></div><h3>{{task.title}}</h3><p v-if="task.description">{{task.description}}</p><div class="task-tags"><span class="project-dot" :class="task.project.toLowerCase()"></span>{{task.project}}<span class="date-label" :class="{overdue:overdue(task)}"><CalendarOutlined/> {{formatDate(task.dueDate)}}{{overdue(task)?' · Overdue':''}}</span></div><div class="card-bottom"><span class="task-id">{{task.status==='done'?'✓ All done':'Make it happen'}}</span><a-select :value="task.status" @change="store.setStatus(task.id,$event)" :options="Object.entries(statusLabels).map(([value,label])=>({value,label}))" :aria-label="'Status for '+task.title" size="small" style="width:125px"/></div></article></template>

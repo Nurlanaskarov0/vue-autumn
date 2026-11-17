@@ -1,0 +1,8 @@
+<script setup>
+import { useTaskForm } from '../composables/useTaskForm'
+import { projects, priorities } from '../stores/tasks'
+import { statusLabels } from '../composables/useTasks'
+const {open,editingId,error,form,show,save}=useTaskForm()
+defineExpose({show})
+</script>
+<template><a-modal v-model:open="open" :title="editingId?'Edit task':'Make a little progress'" :ok-text="editingId?'Save changes':'Create task'" @ok="save" :destroy-on-close="true"><p class="modal-intro">Give your next step a name. The rest follows.</p><a-alert v-if="error" type="error" :message="error" show-icon style="margin-bottom:16px"/><a-form layout="vertical" @submit.prevent="save"><a-form-item label="Task title" required><a-input v-model:value="form.title" :maxlength="120" placeholder="What would you like to get done?" aria-label="Task title"/></a-form-item><a-form-item label="Description"><a-textarea v-model:value="form.description" :rows="3" :maxlength="2000" placeholder="Add a little context…" aria-label="Description"/></a-form-item><div class="form-grid"><a-form-item label="Project"><a-select v-model:value="form.project" :options="projects.map(value=>({value,label:value}))" aria-label="Project"/></a-form-item><a-form-item label="Priority"><a-select v-model:value="form.priority" :options="priorities.map(value=>({value,label:value[0].toUpperCase()+value.slice(1)}))" aria-label="Priority"/></a-form-item><a-form-item label="Status"><a-select v-model:value="form.status" :options="Object.entries(statusLabels).map(([value,label])=>({value,label}))" aria-label="Status"/></a-form-item><a-form-item label="Due date"><a-input type="date" v-model:value="form.dueDate" aria-label="Due date"/></a-form-item></div></a-form></a-modal></template>
